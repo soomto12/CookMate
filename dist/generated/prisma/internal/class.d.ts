@@ -128,6 +128,61 @@ export interface PrismaClient<in LogOpts extends Prisma.LogLevel = never, in out
     get user(): Prisma.UserDelegate<ExtArgs, {
         omit: OmitOpts;
     }>;
+    /**
+     * `prisma.recipe`: Exposes CRUD operations for the **Recipe** model.
+      * Example usage:
+      * ```ts
+      * // Fetch zero or more Recipes
+      * const recipes = await prisma.recipe.findMany()
+      * ```
+      */
+    get recipe(): Prisma.RecipeDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
+    /**
+     * `prisma.recipeIngredient`: Exposes CRUD operations for the **RecipeIngredient** model.
+      * Example usage:
+      * ```ts
+      * // Fetch zero or more RecipeIngredients
+      * const recipeIngredients = await prisma.recipeIngredient.findMany()
+      * ```
+      */
+    get recipeIngredient(): Prisma.RecipeIngredientDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
+    /**
+     * `prisma.recipeStep`: Exposes CRUD operations for the **RecipeStep** model.
+      * Example usage:
+      * ```ts
+      * // Fetch zero or more RecipeSteps
+      * const recipeSteps = await prisma.recipeStep.findMany()
+      * ```
+      */
+    get recipeStep(): Prisma.RecipeStepDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
+    /**
+     * `prisma.shoppingList`: Exposes CRUD operations for the **ShoppingList** model.
+      * Example usage:
+      * ```ts
+      * // Fetch zero or more ShoppingLists
+      * const shoppingLists = await prisma.shoppingList.findMany()
+      * ```
+      */
+    get shoppingList(): Prisma.ShoppingListDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
+    /**
+     * `prisma.shoppingListItem`: Exposes CRUD operations for the **ShoppingListItem** model.
+      * Example usage:
+      * ```ts
+      * // Fetch zero or more ShoppingListItems
+      * const shoppingListItems = await prisma.shoppingListItem.findMany()
+      * ```
+      */
+    get shoppingListItem(): Prisma.ShoppingListItemDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
 }
 export declare function getPrismaClientClass(): PrismaClientConstructor;
 //# sourceMappingURL=class.d.ts.map

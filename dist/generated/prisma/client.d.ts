@@ -26,4 +26,29 @@ export { Prisma };
  *
  */
 export type User = Prisma.UserModel;
+/**
+ * Model Recipe
+ *
+ */
+export type Recipe = Prisma.RecipeModel;
+/**
+ * Model RecipeIngredient
+ *
+ */
+export type RecipeIngredient = Prisma.RecipeIngredientModel;
+/**
+ * Model RecipeStep
+ *
+ */
+export type RecipeStep = Prisma.RecipeStepModel;
+/**
+ * Model ShoppingList
+ *
+ */
+export type ShoppingList = Prisma.ShoppingListModel;
+/**
+ * Model ShoppingListItem
+ *
+ */
+export type ShoppingListItem = Prisma.ShoppingListItemModel;
 //# sourceMappingURL=client.d.ts.map

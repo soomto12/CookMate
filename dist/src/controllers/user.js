@@ -33,6 +33,7 @@ const signUp = async (req, res) => {
         });
     }
     catch (err) {
+        console.error(err);
         return res.status(500).json({ error: "Failed to create account" });
     }
 };
@@ -69,6 +70,7 @@ const login = async (req, res) => {
         });
     }
     catch (err) {
+        console.error(err);
         return res.status(500).json({ error: "Failed to log in" });
     }
 };

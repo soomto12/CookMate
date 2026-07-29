@@ -37,6 +37,7 @@ export const signUp = async (req: Request, res: Response) => {
       token,
     });
   } catch (err) {
+    console.error(err);
     return res.status(500).json({ error: "Failed to create account" });
   }
 };
@@ -80,6 +81,7 @@ export const login = async (req: Request, res: Response) => {
       token,
     });
   } catch (err) {
+    console.error(err);
     return res.status(500).json({ error: "Failed to log in" });
   }
 };

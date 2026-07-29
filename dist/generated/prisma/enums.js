@@ -9,4 +9,10 @@
 * 🟢 You can import this file directly.
 */
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Difficulty = void 0;
+exports.Difficulty = {
+    EASY: 'EASY',
+    MEDIUM: 'MEDIUM',
+    HARD: 'HARD'
+};
 //# sourceMappingURL=enums.js.map

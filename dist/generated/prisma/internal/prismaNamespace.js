@@ -48,7 +48,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.defineExtension = exports.QueryMode = exports.SortOrder = exports.UserScalarFieldEnum = exports.TransactionIsolationLevel = exports.ModelName = exports.AnyNull = exports.JsonNull = exports.DbNull = exports.NullTypes = exports.prismaVersion = exports.getExtensionContext = exports.Decimal = exports.Sql = exports.raw = exports.join = exports.empty = exports.sql = exports.PrismaClientValidationError = exports.PrismaClientInitializationError = exports.PrismaClientRustPanicError = exports.PrismaClientUnknownRequestError = exports.PrismaClientKnownRequestError = void 0;
+exports.defineExtension = exports.NullsOrder = exports.QueryMode = exports.SortOrder = exports.ShoppingListItemScalarFieldEnum = exports.ShoppingListScalarFieldEnum = exports.RecipeStepScalarFieldEnum = exports.RecipeIngredientScalarFieldEnum = exports.RecipeScalarFieldEnum = exports.UserScalarFieldEnum = exports.TransactionIsolationLevel = exports.ModelName = exports.AnyNull = exports.JsonNull = exports.DbNull = exports.NullTypes = exports.prismaVersion = exports.getExtensionContext = exports.Decimal = exports.Sql = exports.raw = exports.join = exports.empty = exports.sql = exports.PrismaClientValidationError = exports.PrismaClientInitializationError = exports.PrismaClientRustPanicError = exports.PrismaClientUnknownRequestError = exports.PrismaClientKnownRequestError = void 0;
 const runtime = __importStar(require("@prisma/client/runtime/client"));
 /**
  * Prisma Errors
@@ -103,7 +103,12 @@ exports.JsonNull = runtime.JsonNull;
  */
 exports.AnyNull = runtime.AnyNull;
 exports.ModelName = {
-    User: 'User'
+    User: 'User',
+    Recipe: 'Recipe',
+    RecipeIngredient: 'RecipeIngredient',
+    RecipeStep: 'RecipeStep',
+    ShoppingList: 'ShoppingList',
+    ShoppingListItem: 'ShoppingListItem'
 };
 /**
  * Enums
@@ -122,6 +127,47 @@ exports.UserScalarFieldEnum = {
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
 };
+exports.RecipeScalarFieldEnum = {
+    id: 'id',
+    title: 'title',
+    description: 'description',
+    cuisine: 'cuisine',
+    servings: 'servings',
+    cookTimeMinutes: 'cookTimeMinutes',
+    difficulty: 'difficulty',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    createdById: 'createdById'
+};
+exports.RecipeIngredientScalarFieldEnum = {
+    id: 'id',
+    name: 'name',
+    quantity: 'quantity',
+    unit: 'unit',
+    recipeId: 'recipeId'
+};
+exports.RecipeStepScalarFieldEnum = {
+    id: 'id',
+    order: 'order',
+    instruction: 'instruction',
+    recipeId: 'recipeId'
+};
+exports.ShoppingListScalarFieldEnum = {
+    id: 'id',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    userId: 'userId',
+    recipeId: 'recipeId'
+};
+exports.ShoppingListItemScalarFieldEnum = {
+    id: 'id',
+    name: 'name',
+    quantity: 'quantity',
+    unit: 'unit',
+    purchased: 'purchased',
+    createdAt: 'createdAt',
+    shoppingListId: 'shoppingListId'
+};
 exports.SortOrder = {
     asc: 'asc',
     desc: 'desc'
@@ -129,6 +175,10 @@ exports.SortOrder = {
 exports.QueryMode = {
     default: 'default',
     insensitive: 'insensitive'
+};
+exports.NullsOrder = {
+    first: 'first',
+    last: 'last'
 };
 exports.defineExtension = runtime.Extensions.defineExtension;
 //# sourceMappingURL=prismaNamespace.js.map
