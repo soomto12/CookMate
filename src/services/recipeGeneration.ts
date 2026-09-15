@@ -19,13 +19,42 @@ export interface GeneratedRecipe {
   steps: string[];
 }
 
-const buildPrompt = (mealName: string, availableIngredients: string[]) => {
+export interface RecipePreferences {
+  excludeCommonAllergens?: boolean;
+  quickMealOnly?: boolean;
+}
+
+const COMMON_ALLERGENS = [
+  "peanuts",
+  "tree nuts",
+  "milk",
+  "eggs",
+  "wheat/gluten",
+  "soy",
+  "fish",
+  "shellfish",
+  "sesame",
+];
+
+const buildPrompt = (
+  mealName: string,
+  availableIngredients: string[],
+  preferences: RecipePreferences,
+) => {
   const availableList =
     availableIngredients.length > 0 ? availableIngredients.join(", ") : "nothing in particular";
 
+  const constraints: string[] = [];
+  if (preferences.excludeCommonAllergens) {
+    constraints.push(`Do not use any of these common allergens: ${COMMON_ALLERGENS.join(", ")}.`);
+  }
+  if (preferences.quickMealOnly) {
+    constraints.push("The recipe must be quick: total cook time of 30 minutes or less.");
+  }
+
   return `The user wants to cook: "${mealName}".
 They currently have these ingredients available: ${availableList}.
-
+${constraints.length > 0 ? `\nKitchen preferences (must follow):\n${constraints.join("\n")}\n` : ""}
 Write a complete recipe for "${mealName}". List every ingredient the recipe actually needs (not just the ones the user already has), and give clear, ordered, step-by-step cooking instructions.
 
 Also estimate the total cook time in minutes, and rate the recipe's difficulty as "EASY", "MEDIUM", or "HARD".
@@ -46,6 +75,7 @@ Respond with ONLY a single JSON object, no other text, in exactly this shape:
 export const generateRecipe = async (
   mealName: string,
   availableIngredients: string[],
+  preferences: RecipePreferences = {},
 ): Promise<GeneratedRecipe> => {
   const response = await fetch(OPENROUTER_API_URL, {
     method: "POST",
@@ -62,7 +92,7 @@ export const generateRecipe = async (
           content:
             "You are a precise recipe-writing assistant. Always respond with a single valid JSON object and nothing else - no markdown, no commentary.",
         },
-        { role: "user", content: buildPrompt(mealName, availableIngredients) },
+        { role: "user", content: buildPrompt(mealName, availableIngredients, preferences) },
       ],
     }),
   });

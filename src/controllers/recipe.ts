@@ -24,21 +24,13 @@ export const listRecipesHandler = async (req: Request, res: Response) => {
 };
 
 export const generateRecipeHandler = async (req: Request, res: Response) => {
-  const { mealName, availableIngredients } = req.body;
-
-  if (typeof mealName !== "string" || mealName.trim().length === 0) {
-    return res.status(400).json({ error: "mealName is required" });
-  }
-
-  if (
-    !Array.isArray(availableIngredients) ||
-    !availableIngredients.every((item) => typeof item === "string")
-  ) {
-    return res.status(400).json({ error: "availableIngredients must be an array of strings" });
-  }
+  const { mealName, availableIngredients, excludeCommonAllergens, quickMealOnly } = req.body;
 
   try {
-    const generated = await generateRecipe(mealName, availableIngredients);
+    const generated = await generateRecipe(mealName, availableIngredients, {
+      excludeCommonAllergens,
+      quickMealOnly,
+    });
 
     const availableSet = new Set(availableIngredients.map(normalize));
     const missingIngredients = generated.ingredients.filter(

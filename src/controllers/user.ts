@@ -8,15 +8,7 @@ const SALT_ROUNDS = 10;
 export const signUp = async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
 
-  if (typeof name !== "string" || typeof email !== "string" || typeof password !== "string") {
-    return res.status(400).json({ error: "name, email and password are required" });
-  }
-
-  if (password.length < 8) {
-    return res.status(400).json({ error: "password must be at least 8 characters" });
-  }
-
-  const normalizedEmail = email.trim().toLowerCase();
+  const normalizedEmail = String(email).trim().toLowerCase();
 
   try {
     const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } });
@@ -57,11 +49,7 @@ export const me = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
-  if (typeof email !== "string" || typeof password !== "string") {
-    return res.status(400).json({ error: "email and password are required" });
-  }
-
-  const normalizedEmail = email.trim().toLowerCase();
+  const normalizedEmail = String(email).trim().toLowerCase();
 
   try {
     const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });

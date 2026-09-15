@@ -1,5 +1,5 @@
 import "dotenv/config";
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import cors from "cors";
 import authRoutes from "./routes/auth.routes";
 import recipeRoutes from "./routes/recipe.routes";
@@ -21,6 +21,17 @@ app.get("/health", (_req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/recipes", recipeRoutes);
+
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  console.error(err);
+
+  const status = typeof err?.status === "number" ? err.status : 500;
+  const message = typeof err?.message === "string" && err.message.trim().length > 0
+    ? err.message
+    : "Internal server error";
+
+  return res.status(status).json({ error: message });
+});
 
 app.listen(PORT, () => {
   console.log(`CookMate API listening on port ${PORT}`);
