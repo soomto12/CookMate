@@ -5,14 +5,12 @@ import { generateRecipe, suggestMeals } from "../services/recipeGeneration";
 const normalize = (name: string) => name.trim().toLowerCase();
 
 export const listRecipesHandler = async (req: Request, res: Response, next: NextFunction) => {
-  const user =  await prisma.user.findUnique({ where: { id: req.userId}})
-   if(!user){
-    return res.status(404).json( {message: "user not found"})
+  // requireAuth has already verified the user exists.
+  const userId = req.userId as string;
 
-   }
   try {
     const recipes = await prisma.recipe.findMany({
-      where: { createdById: user?.id},
+      where: { createdById: userId },
       orderBy: { createdAt: "desc" },
       include: {
         ingredients: true,
@@ -30,14 +28,10 @@ export const listRecipesHandler = async (req: Request, res: Response, next: Next
 export const generateRecipeHandler = async (req: Request, res: Response, next: NextFunction) => {
   const { mealName, availableIngredients, excludeCommonAllergens, quickMealOnly } = req.body;
 
-   const user =  await prisma.user.findUnique({ where: { id: req.userId}})
-   if(!user){
-    return res.status(404).json( {message: "user not found"})
-
-   }
+  const userId = req.userId as string;
 
   try {
-    const generated = await generateRecipe(mealName,  availableIngredients,  user?.id ,{
+    const generated = await generateRecipe(mealName, availableIngredients, userId, {
       excludeCommonAllergens,
       quickMealOnly,
     });
@@ -56,7 +50,7 @@ export const generateRecipeHandler = async (req: Request, res: Response, next: N
           servings: generated.servings,
           cookTimeMinutes: generated.cookTimeMinutes,
           difficulty: generated.difficulty,
-          createdById: req.userId,
+          createdById: userId,
           ingredients: {
             create: generated.ingredients.map((ingredient) => ({
               name: normalize(ingredient.name),
@@ -76,7 +70,7 @@ export const generateRecipeHandler = async (req: Request, res: Response, next: N
       if (missingIngredients.length > 0) {
         await tx.shoppingList.create({
           data: {
-            userId: user?.id as string,
+            userId,
             recipeId: created.id,
             items: {
               create: missingIngredients.map((ingredient) => ({
