@@ -1,11 +1,11 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import { prisma } from "../lib/prisma";
 import { signToken } from "../lib/jwt";
 
 const SALT_ROUNDS = 10;
 
-export const signUp = async (req: Request, res: Response) => {
+export const signUp = async (req: Request, res: Response, next: NextFunction) => {
   const { name, email, password } = req.body;
 
   const normalizedEmail = String(email).trim().toLowerCase();
@@ -29,24 +29,27 @@ export const signUp = async (req: Request, res: Response) => {
       token,
     });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Failed to create account" });
+    return next(err);
   }
 };
 
-export const me = async (req: Request, res: Response) => {
-  const user = await prisma.user.findUnique({ where: { id: req.userId } });
+export const me = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
 
-  if (!user) {
-    return res.status(404).json({ error: "User not found" });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    return res.status(200).json({
+      user: { id: user.id, name: user.name, email: user.email },
+    });
+  } catch (err) {
+    return next(err);
   }
-
-  return res.status(200).json({
-    user: { id: user.id, name: user.name, email: user.email },
-  });
 };
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response, next: NextFunction) => {
   const { email, password } = req.body;
 
   const normalizedEmail = String(email).trim().toLowerCase();
@@ -69,7 +72,6 @@ export const login = async (req: Request, res: Response) => {
       token,
     });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Failed to log in" });
+    return next(err);
   }
 };

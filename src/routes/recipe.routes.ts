@@ -35,11 +35,13 @@ const generateRecipeValidation = [
   body("excludeCommonAllergens")
     .optional()
     .isBoolean()
-    .withMessage("excludeCommonAllergens must be a boolean"),
+    .withMessage("excludeCommonAllergens must be a boolean")
+    .toBoolean(),
   body("quickMealOnly")
     .optional()
     .isBoolean()
-    .withMessage("quickMealOnly must be a boolean"),
+    .withMessage("quickMealOnly must be a boolean")
+    .toBoolean(),
 ];
 
 router.get("/", requireAuth, listRecipesHandler);

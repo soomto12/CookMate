@@ -4,7 +4,7 @@ exports.generateRecipeHandler = exports.listRecipesHandler = void 0;
 const prisma_1 = require("../lib/prisma");
 const recipeGeneration_1 = require("../services/recipeGeneration");
 const normalize = (name) => name.trim().toLowerCase();
-const listRecipesHandler = async (req, res) => {
+const listRecipesHandler = async (req, res, next) => {
     try {
         const recipes = await prisma_1.prisma.recipe.findMany({
             where: { createdById: req.userId },
@@ -18,22 +18,17 @@ const listRecipesHandler = async (req, res) => {
         return res.status(200).json({ recipes });
     }
     catch (err) {
-        console.error(err);
-        return res.status(500).json({ error: "Failed to fetch recipes" });
+        return next(err);
     }
 };
 exports.listRecipesHandler = listRecipesHandler;
-const generateRecipeHandler = async (req, res) => {
-    const { mealName, availableIngredients } = req.body;
-    if (typeof mealName !== "string" || mealName.trim().length === 0) {
-        return res.status(400).json({ error: "mealName is required" });
-    }
-    if (!Array.isArray(availableIngredients) ||
-        !availableIngredients.every((item) => typeof item === "string")) {
-        return res.status(400).json({ error: "availableIngredients must be an array of strings" });
-    }
+const generateRecipeHandler = async (req, res, next) => {
+    const { mealName, availableIngredients, excludeCommonAllergens, quickMealOnly } = req.body;
     try {
-        const generated = await (0, recipeGeneration_1.generateRecipe)(mealName, availableIngredients);
+        const generated = await (0, recipeGeneration_1.generateRecipe)(mealName, availableIngredients, {
+            excludeCommonAllergens,
+            quickMealOnly,
+        });
         const availableSet = new Set(availableIngredients.map(normalize));
         const missingIngredients = generated.ingredients.filter((ingredient) => !availableSet.has(normalize(ingredient.name)));
         const recipe = await prisma_1.prisma.$transaction(async (tx) => {
@@ -88,8 +83,7 @@ const generateRecipeHandler = async (req, res) => {
         return res.status(201).json({ recipe });
     }
     catch (err) {
-        console.error(err);
-        return res.status(500).json({ error: "Failed to generate recipe" });
+        return next(err);
     }
 };
 exports.generateRecipeHandler = generateRecipeHandler;

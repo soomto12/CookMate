@@ -5,7 +5,7 @@ import { requireAuth } from "../middleware/auth";
 
 const router = Router();
 
-const validateRequest = (req: any, res: any, next: any) => {
+const validateRequest : any  = (req: any, res: any, next: any) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {

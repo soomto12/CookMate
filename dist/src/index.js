@@ -20,6 +20,14 @@ app.get("/health", (_req, res) => {
 });
 app.use("/api/auth", auth_routes_1.default);
 app.use("/api/recipes", recipe_routes_1.default);
+app.use((err, _req, res, _next) => {
+    console.error(err);
+    const status = typeof err?.status === "number" ? err.status : 500;
+    const message = typeof err?.message === "string" && err.message.trim().length > 0
+        ? err.message
+        : "Internal server error";
+    return res.status(status).json({ error: message });
+});
 app.listen(PORT, () => {
     console.log(`CookMate API listening on port ${PORT}`);
 });

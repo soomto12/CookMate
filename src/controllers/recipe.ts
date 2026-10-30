@@ -1,13 +1,18 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { prisma } from "../lib/prisma";
 import { generateRecipe } from "../services/recipeGeneration";
 
 const normalize = (name: string) => name.trim().toLowerCase();
 
-export const listRecipesHandler = async (req: Request, res: Response) => {
+export const listRecipesHandler = async (req: Request, res: Response, next: NextFunction) => {
+  const user =  await prisma.user.findUnique({ where: { id: req.userId}})
+   if(!user){
+    res.status(404).json( {message: "user not found"})
+
+   }
   try {
     const recipes = await prisma.recipe.findMany({
-      where: { createdById: req.userId },
+      where: { createdById: user?.id},
       orderBy: { createdAt: "desc" },
       include: {
         ingredients: true,
@@ -18,16 +23,21 @@ export const listRecipesHandler = async (req: Request, res: Response) => {
 
     return res.status(200).json({ recipes });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Failed to fetch recipes" });
+    return next(err);
   }
 };
 
-export const generateRecipeHandler = async (req: Request, res: Response) => {
+export const generateRecipeHandler = async (req: Request, res: Response, next: NextFunction) => {
   const { mealName, availableIngredients, excludeCommonAllergens, quickMealOnly } = req.body;
 
+   const user =  await prisma.user.findUnique({ where: { id: req.userId}})
+   if(!user){
+    res.status(404).json( {message: "user not found"})
+
+   }
+
   try {
-    const generated = await generateRecipe(mealName, availableIngredients, {
+    const generated = await generateRecipe(mealName,  availableIngredients,  user?.id ,{
       excludeCommonAllergens,
       quickMealOnly,
     });
@@ -66,7 +76,7 @@ export const generateRecipeHandler = async (req: Request, res: Response) => {
       if (missingIngredients.length > 0) {
         await tx.shoppingList.create({
           data: {
-            userId: req.userId as string,
+            userId: user?.id as string,
             recipeId: created.id,
             items: {
               create: missingIngredients.map((ingredient) => ({
@@ -91,7 +101,6 @@ export const generateRecipeHandler = async (req: Request, res: Response) => {
 
     return res.status(201).json({ recipe });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Failed to generate recipe" });
+    return next(err);
   }
 };

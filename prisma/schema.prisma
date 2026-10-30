@@ -22,6 +22,7 @@ model User {
 
   recipes       Recipe[]
   shoppingLists ShoppingList[]
+  allergen      Allergen?
 }
 
 enum Difficulty {
@@ -102,4 +103,28 @@ model ShoppingListItem {
 
   shoppingListId String
   shoppingList   ShoppingList @relation(fields: [shoppingListId], references: [id], onDelete: Cascade)
+}
+
+// A user's allergy list: one per user, holding the array of foods they're
+// allergic to.
+model Allergen {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  foods Food[]
+}
+
+// A food item, e.g. "peanut". Shared across users - one row per name, so many
+// users' allergen lists can point at the same food.
+model Food {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  allergens Allergen[]
 }

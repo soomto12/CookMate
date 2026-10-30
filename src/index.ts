@@ -3,6 +3,7 @@ import express, { NextFunction, Request, Response } from "express";
 import cors from "cors";
 import authRoutes from "./routes/auth.routes";
 import recipeRoutes from "./routes/recipe.routes";
+import allergenRoutes from "./routes/allergen.routes";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,6 +22,7 @@ app.get("/health", (_req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/recipes", recipeRoutes);
+app.use("/api/allergens", allergenRoutes);
 
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   console.error(err);

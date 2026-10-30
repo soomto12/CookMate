@@ -14,5 +14,9 @@ export interface GeneratedRecipe {
     ingredients: GeneratedIngredient[];
     steps: string[];
 }
-export declare const generateRecipe: (mealName: string, availableIngredients: string[]) => Promise<GeneratedRecipe>;
+export interface RecipePreferences {
+    excludeCommonAllergens?: boolean;
+    quickMealOnly?: boolean;
+}
+export declare const generateRecipe: (mealName: string, availableIngredients: string[], preferences?: RecipePreferences) => Promise<GeneratedRecipe>;
 //# sourceMappingURL=recipeGeneration.d.ts.map

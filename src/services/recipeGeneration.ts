@@ -1,5 +1,5 @@
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
-
+import { userAllergen , allergen} from "./userallergen";
 export interface GeneratedIngredient {
   name: string;
   quantity: number | null;
@@ -24,19 +24,12 @@ export interface RecipePreferences {
   quickMealOnly?: boolean;
 }
 
-const COMMON_ALLERGENS = [
-  "peanuts",
-  "tree nuts",
-  "milk",
-  "eggs",
-  "wheat/gluten",
-  "soy",
-  "fish",
-  "shellfish",
-  "sesame",
-];
 
-const buildPrompt = (
+let  COMMON_ALLERGENS : allergen[] = []
+
+
+
+const buildPrompt = async (
   mealName: string,
   availableIngredients: string[],
   preferences: RecipePreferences,
@@ -45,9 +38,13 @@ const buildPrompt = (
     availableIngredients.length > 0 ? availableIngredients.join(", ") : "nothing in particular";
 
   const constraints: string[] = [];
+
   if (preferences.excludeCommonAllergens) {
-    constraints.push(`Do not use any of these common allergens: ${COMMON_ALLERGENS.join(", ")}.`);
+    constraints.push(
+      `Do not use any of these allergens, including ingredients that contain them (e.g. sauces, stocks, or spreads):  ${COMMON_ALLERGENS.join(" ,")}.`,
+    );
   }
+  
   if (preferences.quickMealOnly) {
     constraints.push("The recipe must be quick: total cook time of 30 minutes or less.");
   }
@@ -75,8 +72,13 @@ Respond with ONLY a single JSON object, no other text, in exactly this shape:
 export const generateRecipe = async (
   mealName: string,
   availableIngredients: string[],
+  id : string |  undefined,
   preferences: RecipePreferences = {},
 ): Promise<GeneratedRecipe> => {
+
+   const allergenData = await userAllergen(id)
+    COMMON_ALLERGENS = allergenData
+
   const response = await fetch(OPENROUTER_API_URL, {
     method: "POST",
     headers: {
