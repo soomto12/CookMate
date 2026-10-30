@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { body, validationResult } from "express-validator";
-import { generateRecipeHandler, listRecipesHandler } from "../controllers/recipe";
+import { generateRecipeHandler, listRecipesHandler, suggestMealsHandler } from "../controllers/recipe";
 import { requireAuth } from "../middleware/auth";
 
 const router = Router();
@@ -44,7 +44,21 @@ const generateRecipeValidation = [
     .toBoolean(),
 ];
 
+const suggestMealsValidation = [
+  body("availableIngredients")
+    .isArray({ min: 1, max: 50 })
+    .withMessage("availableIngredients must be a non-empty array of strings")
+    .custom((value) => Array.isArray(value) && value.every((item) => typeof item === "string" && item.trim().length > 0))
+    .withMessage("availableIngredients must contain only non-empty strings"),
+  body("quickMealOnly")
+    .optional()
+    .isBoolean()
+    .withMessage("quickMealOnly must be a boolean")
+    .toBoolean(),
+];
+
 router.get("/", requireAuth, listRecipesHandler);
 router.post("/generate", requireAuth, generateRecipeValidation, validateRequest, generateRecipeHandler);
+router.post("/suggest", requireAuth, suggestMealsValidation, validateRequest, suggestMealsHandler);
 
 export default router;

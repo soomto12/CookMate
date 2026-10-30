@@ -1,16 +1,13 @@
-
 import { prisma } from "../lib/prisma";
 
- export interface allergen {
-    id : string,
-   createdAt :Date
-updatedAt : Date
-userId : string
-}
+// The names of the foods the user is allergic to.
+export const userAllergen = async (id: string | undefined): Promise<string[]> => {
+  if (!id) return [];
 
- export const userAllergen = async (id: string| undefined) : Promise<allergen[]>=>{
-const user =  await prisma.user.findUnique({where: {id: id}})
-const allergen = await prisma.allergen.findMany({where : { userId: user?.id} })
-return allergen
+  const allergen = await prisma.allergen.findUnique({
+    where: { userId: id },
+    include: { foods: true },
+  });
 
-}
+  return allergen?.foods.map((food) => food.name) ?? [];
+};

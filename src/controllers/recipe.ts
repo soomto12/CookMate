@@ -1,13 +1,13 @@
 import { NextFunction, Request, Response } from "express";
 import { prisma } from "../lib/prisma";
-import { generateRecipe } from "../services/recipeGeneration";
+import { generateRecipe, suggestMeals } from "../services/recipeGeneration";
 
 const normalize = (name: string) => name.trim().toLowerCase();
 
 export const listRecipesHandler = async (req: Request, res: Response, next: NextFunction) => {
   const user =  await prisma.user.findUnique({ where: { id: req.userId}})
    if(!user){
-    res.status(404).json( {message: "user not found"})
+    return res.status(404).json( {message: "user not found"})
 
    }
   try {
@@ -32,7 +32,7 @@ export const generateRecipeHandler = async (req: Request, res: Response, next: N
 
    const user =  await prisma.user.findUnique({ where: { id: req.userId}})
    if(!user){
-    res.status(404).json( {message: "user not found"})
+    return res.status(404).json( {message: "user not found"})
 
    }
 
@@ -100,6 +100,27 @@ export const generateRecipeHandler = async (req: Request, res: Response, next: N
     }, { maxWait: 10_000, timeout: 15_000 });
 
     return res.status(201).json({ recipe });
+  } catch (err) {
+    return next(err);
+  }
+};
+
+// Suggests meal names (just an array of strings, no recipes) from the user's ingredients.
+export const suggestMealsHandler = async (req: Request, res: Response, next: NextFunction) => {
+  const { availableIngredients, quickMealOnly } = req.body;
+
+  try {
+    const allergen = await prisma.allergen.findUnique({
+      where: { userId: req.userId },
+      include: { foods: true },
+    });
+
+    const meals = await suggestMeals(availableIngredients, {
+      allergens: allergen?.foods.map((food) => food.name) ?? [],
+      quickMealOnly,
+    });
+
+    return res.status(200).json({ meals });
   } catch (err) {
     return next(err);
   }

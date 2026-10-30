@@ -1,5 +1,5 @@
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
-import { userAllergen , allergen} from "./userallergen";
+import { userAllergen } from "./userallergen";
 export interface GeneratedIngredient {
   name: string;
   quantity: number | null;
@@ -25,13 +25,10 @@ export interface RecipePreferences {
 }
 
 
-let  COMMON_ALLERGENS : allergen[] = []
-
-
-
-const buildPrompt = async (
+const buildPrompt = (
   mealName: string,
   availableIngredients: string[],
+  allergens: string[],
   preferences: RecipePreferences,
 ) => {
   const availableList =
@@ -39,9 +36,9 @@ const buildPrompt = async (
 
   const constraints: string[] = [];
 
-  if (preferences.excludeCommonAllergens) {
+  if (preferences.excludeCommonAllergens && allergens.length > 0) {
     constraints.push(
-      `Do not use any of these allergens, including ingredients that contain them (e.g. sauces, stocks, or spreads):  ${COMMON_ALLERGENS.join(" ,")}.`,
+      `Do not use any of these allergens, including ingredients that contain them (e.g. sauces, stocks, or spreads): ${allergens.join(", ")}.`,
     );
   }
   
@@ -76,8 +73,7 @@ export const generateRecipe = async (
   preferences: RecipePreferences = {},
 ): Promise<GeneratedRecipe> => {
 
-   const allergenData = await userAllergen(id)
-    COMMON_ALLERGENS = allergenData
+  const allergens = preferences.excludeCommonAllergens ? await userAllergen(id) : [];
 
   const response = await fetch(OPENROUTER_API_URL, {
     method: "POST",
@@ -94,7 +90,7 @@ export const generateRecipe = async (
           content:
             "You are a precise recipe-writing assistant. Always respond with a single valid JSON object and nothing else - no markdown, no commentary.",
         },
-        { role: "user", content: buildPrompt(mealName, availableIngredients, preferences) },
+        { role: "user", content: buildPrompt(mealName, availableIngredients, allergens, preferences) },
       ],
     }),
   });
@@ -131,4 +127,80 @@ export const generateRecipe = async (
       : null;
 
   return { ...parsed, difficulty, cookTimeMinutes };
+};
+
+export interface MealSuggestionOptions {
+  allergens?: string[];
+  quickMealOnly?: boolean;
+  count?: number;
+}
+
+// Suggests meal names (no recipes) that can be made mostly from the given ingredients.
+export const suggestMeals = async (
+  availableIngredients: string[],
+  options: MealSuggestionOptions = {},
+): Promise<string[]> => {
+  const { allergens = [], quickMealOnly = false, count = 5 } = options;
+
+  const constraints: string[] = [];
+  if (allergens.length > 0) {
+    constraints.push(
+      `Never suggest a meal that contains these allergens, including hidden sources such as sauces, stocks or spreads: ${allergens.join(", ")}.`,
+    );
+  }
+  if (quickMealOnly) {
+    constraints.push("Every meal must take 30 minutes or less to cook.");
+  }
+
+  const prompt = `The user has these ingredients available: ${availableIngredients.join(", ")}.
+Suggest ${count} different meals they could cook, preferring meals that need few or no extra ingredients.
+${constraints.length > 0 ? `\nMust follow:\n${constraints.join("\n")}\n` : ""}
+Respond with ONLY a single JSON object, no other text, in exactly this shape:
+{ "meals": [ string, string, ... ] }
+Each item is just the name of the meal. Do not include recipes, ingredients or descriptions.`;
+
+  const response = await fetch(OPENROUTER_API_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini",
+      response_format: { type: "json_object" },
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a helpful cooking assistant. Always respond with a single valid JSON object and nothing else - no markdown, no commentary.",
+        },
+        { role: "user", content: prompt },
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`OpenRouter request failed (${response.status}): ${errorText}`);
+  }
+
+  const data = (await response.json()) as {
+    choices?: { message?: { content?: string } }[];
+  };
+
+  const content = data.choices?.[0]?.message?.content;
+
+  if (typeof content !== "string") {
+    throw new Error("OpenRouter response did not contain message content");
+  }
+
+  const parsed = JSON.parse(content) as { meals?: unknown };
+
+  if (!Array.isArray(parsed.meals)) {
+    throw new Error("AI response was missing the meals array");
+  }
+
+  return parsed.meals
+    .filter((meal): meal is string => typeof meal === "string" && meal.trim().length > 0)
+    .map((meal) => meal.trim());
 };

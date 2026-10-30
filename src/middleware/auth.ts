@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import { verifyToken } from "../lib/jwt";
+import { prisma } from "../lib/prisma";
 
-export const requireAuth = (req: Request, res: Response, next: NextFunction) => {
+export const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
   const header = req.headers.authorization;
 
   if (!header || !header.startsWith("Bearer ")) {
@@ -10,11 +11,22 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction) => 
 
   const token = header.slice("Bearer ".length);
 
+  let userId: string;
   try {
-    const payload = verifyToken(token);
-    req.userId = payload.userId;
-    next();
+    userId = verifyToken(token).userId;
   } catch {
     return res.status(401).json({ error: "Invalid or expired token" });
+  }
+
+  try {
+    // A valid token isn't enough: the account may have been deleted since it was issued.
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+    if (!user) {
+      return res.status(401).json({ error: "User no longer exists" });
+    }
+    req.userId = user.id;
+    return next();
+  } catch (err) {
+    return next(err);
   }
 };
