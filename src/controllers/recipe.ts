@@ -1,14 +1,18 @@
 import { NextFunction, Request, Response } from "express";
-import { prisma } from "../lib/prisma";
-import { generateRecipe, suggestMeals } from "../services/recipeGeneration";
+import { prisma } from "./lib/prisma";
+import { generateIngredients, generateRecipe, suggestMeals } from "../services/recipeGeneration";
+import { findRecipeImage } from "../services/unsplash";
 
 const normalize = (name: string) => name.trim().toLowerCase();
 
 export const listRecipesHandler = async (req: Request, res: Response, next: NextFunction) => {
-  // requireAuth has already verified the user exists.
-  const userId = req.userId as string;
-
   try {
+    const user = await prisma.user.findUnique({ where: { id: req.userId }, select: { id: true } });
+    if (!user) {
+      return res.status(404).json({ error: "user does not exist" });
+    }
+    const userId = user.id;
+
     const recipes = await prisma.recipe.findMany({
       where: { createdById: userId },
       orderBy: { createdAt: "desc" },
@@ -26,11 +30,23 @@ export const listRecipesHandler = async (req: Request, res: Response, next: Next
 };
 
 export const generateRecipeHandler = async (req: Request, res: Response, next: NextFunction) => {
-  const { mealName, availableIngredients, excludeCommonAllergens, quickMealOnly } = req.body;
-
-  const userId = req.userId as string;
+  const {
+    mealName,
+    availableIngredients,
+    excludeCommonAllergens,
+    quickMealOnly,
+    imageUrl,
+    imageCredit,
+    imageCreditUrl,
+  } = req.body;
 
   try {
+    const user = await prisma.user.findUnique({ where: { id: req.userId }, select: { id: true } });
+    if (!user) {
+      return res.status(404).json({ error: "user does not exist" });
+    }
+    const userId = user.id;
+
     const generated = await generateRecipe(mealName, availableIngredients, userId, {
       excludeCommonAllergens,
       quickMealOnly,
@@ -41,9 +57,19 @@ export const generateRecipeHandler = async (req: Request, res: Response, next: N
       (ingredient) => !availableSet.has(normalize(ingredient.name)),
     );
 
+    // Prefer the image the client is already showing the user, so the saved recipe
+    // matches it; only fall back to a lookup when none was sent. Resolved before the
+    // transaction so the Unsplash call can't hold it open.
+    const image = imageUrl
+      ? { imageUrl, imageCredit: imageCredit ?? null, imageCreditUrl: imageCreditUrl ?? null }
+      : await findRecipeImage(generated.title);
+
     const recipe = await prisma.$transaction(async (tx) => {
       const created = await tx.recipe.create({
         data: {
+          imageUrl: image?.imageUrl ?? null,
+          imageCredit: image?.imageCredit ?? null,
+          imageCreditUrl: image?.imageCreditUrl ?? null,
           title: generated.title,
           description: generated.description,
           cuisine: generated.cuisine,
@@ -99,13 +125,36 @@ export const generateRecipeHandler = async (req: Request, res: Response, next: N
   }
 };
 
+// Returns the full ingredient list for a meal. Nothing is saved.
+export const generateIngredientsHandler = async (req: Request, res: Response, next: NextFunction) => {
+  const { mealName } = req.body;
+
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.userId }, select: { id: true } });
+    if (!user) {
+      return res.status(404).json({ error: "user does not exist" });
+    }
+
+    const ingredients = await generateIngredients(mealName);
+
+    return res.status(200).json({ mealName, ingredients });
+  } catch (err) {
+    return next(err);
+  }
+};
+
 // Suggests meal names (just an array of strings, no recipes) from the user's ingredients.
 export const suggestMealsHandler = async (req: Request, res: Response, next: NextFunction) => {
   const { availableIngredients, quickMealOnly } = req.body;
 
   try {
+    const user = await prisma.user.findUnique({ where: { id: req.userId }, select: { id: true } });
+    if (!user) {
+      return res.status(404).json({ error: "user does not exist" });
+    }
+
     const allergen = await prisma.allergen.findUnique({
-      where: { userId: req.userId },
+      where: { userId: user.id },
       include: { foods: true },
     });
 

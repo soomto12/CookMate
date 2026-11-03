@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { body, validationResult } from "express-validator";
-import { generateRecipeHandler, listRecipesHandler, suggestMealsHandler } from "../controllers/recipe";
+import { generateIngredientsHandler, generateRecipeHandler, listRecipesHandler, suggestMealsHandler } from "../controllers/recipe";
 import { requireAuth } from "../middleware/auth";
 
 const router = Router();
@@ -42,6 +42,29 @@ const generateRecipeValidation = [
     .isBoolean()
     .withMessage("quickMealOnly must be a boolean")
     .toBoolean(),
+  // Optional: the image the client is already displaying. When absent the server
+  // looks one up instead.
+  body("imageUrl")
+    .optional()
+    .trim()
+    .isURL({ protocols: ["http", "https"], require_protocol: true })
+    .withMessage("imageUrl must be an http(s) URL")
+    .isLength({ max: 2048 })
+    .withMessage("imageUrl must be at most 2048 characters"),
+  body("imageCredit")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("imageCredit must not be empty")
+    .isLength({ max: 200 })
+    .withMessage("imageCredit must be at most 200 characters"),
+  body("imageCreditUrl")
+    .optional()
+    .trim()
+    .isURL({ protocols: ["http", "https"], require_protocol: true })
+    .withMessage("imageCreditUrl must be an http(s) URL")
+    .isLength({ max: 2048 })
+    .withMessage("imageCreditUrl must be at most 2048 characters"),
 ];
 
 const suggestMealsValidation = [
@@ -57,7 +80,17 @@ const suggestMealsValidation = [
     .toBoolean(),
 ];
 
+const generateIngredientsValidation = [
+  body("mealName")
+    .trim()
+    .notEmpty()
+    .withMessage("mealName is required")
+    .isLength({ min: 2, max: 200 })
+    .withMessage("mealName must be between 2 and 200 characters"),
+];
+
 router.get("/", requireAuth, listRecipesHandler);
+router.post("/ingredients", requireAuth, generateIngredientsValidation, validateRequest, generateIngredientsHandler);
 router.post("/generate", requireAuth, generateRecipeValidation, validateRequest, generateRecipeHandler);
 router.post("/suggest", requireAuth, suggestMealsValidation, validateRequest, suggestMealsHandler);
 

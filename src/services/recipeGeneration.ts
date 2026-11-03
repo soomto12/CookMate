@@ -51,6 +51,8 @@ They currently have these ingredients available: ${availableList}.
 ${constraints.length > 0 ? `\nKitchen preferences (must follow):\n${constraints.join("\n")}\n` : ""}
 Write a complete recipe for "${mealName}". List every ingredient the recipe actually needs (not just the ones the user already has), and give clear, ordered, step-by-step cooking instructions.
 
+Each ingredient must appear in the list exactly once. Never repeat the same ingredient, even with a different quantity, unit or wording (e.g. do not list both "tomato" and "tomatoes"). If an ingredient is used in several steps, combine the total into a single entry.
+
 Also estimate the total cook time in minutes, and rate the recipe's difficulty as "EASY", "MEDIUM", or "HARD".
 
 Respond with ONLY a single JSON object, no other text, in exactly this shape:
@@ -110,10 +112,39 @@ export const generateRecipe = async (
     throw new Error("OpenRouter response did not contain message content");
   }
 
-  const parsed = JSON.parse(content) as GeneratedRecipe;
+  let parsed: GeneratedRecipe;
+  try {
+    parsed = JSON.parse(content) as GeneratedRecipe;
+  } catch {
+    throw new Error("AI response was not valid JSON");
+  }
 
   if (!parsed.title || !Array.isArray(parsed.ingredients) || !Array.isArray(parsed.steps)) {
     throw new Error("AI response was missing required recipe fields");
+  }
+
+  // Safety net: the prompt asks for no duplicates, but the database enforces
+  // unique ingredient names per recipe, so clean the list here as well.
+  const seen = new Set<string>();
+  const ingredients: GeneratedIngredient[] = [];
+  for (const item of parsed.ingredients) {
+    if (!item || typeof item.name !== "string") continue;
+    const key = item.name.trim().toLowerCase();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    ingredients.push({
+      name: item.name.trim(),
+      quantity: typeof item.quantity === "number" && Number.isFinite(item.quantity) ? item.quantity : null,
+      unit: typeof item.unit === "string" && item.unit.trim() ? item.unit.trim() : null,
+    });
+  }
+
+  const steps = parsed.steps.filter(
+    (step): step is string => typeof step === "string" && step.trim().length > 0,
+  );
+
+  if (ingredients.length === 0 || steps.length === 0) {
+    throw new Error("AI response had no usable ingredients or steps");
   }
 
   const validDifficulties: Difficulty[] = ["EASY", "MEDIUM", "HARD"];
@@ -126,7 +157,82 @@ export const generateRecipe = async (
       ? parsed.cookTimeMinutes
       : null;
 
-  return { ...parsed, difficulty, cookTimeMinutes };
+  return { ...parsed, ingredients, steps, difficulty, cookTimeMinutes };
+};
+
+// Lists every ingredient needed for a meal (no steps, nothing saved).
+export const generateIngredients = async (mealName: string): Promise<GeneratedIngredient[]> => {
+  const prompt = `List every ingredient needed to cook "${mealName}".
+
+Each ingredient must appear exactly once. Never repeat the same ingredient, even with a different quantity, unit or wording (e.g. do not list both "tomato" and "tomatoes").
+
+Respond with ONLY a single JSON object, no other text, in exactly this shape:
+{ "ingredients": [ { "name": string, "quantity": number or null, "unit": string or null } ] }`;
+
+  const response = await fetch(OPENROUTER_API_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini",
+      response_format: { type: "json_object" },
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a precise cooking assistant. Always respond with a single valid JSON object and nothing else - no markdown, no commentary.",
+        },
+        { role: "user", content: prompt },
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`OpenRouter request failed (${response.status}): ${errorText}`);
+  }
+
+  const data = (await response.json()) as {
+    choices?: { message?: { content?: string } }[];
+  };
+
+  const content = data.choices?.[0]?.message?.content;
+  if (typeof content !== "string") {
+    throw new Error("OpenRouter response did not contain message content");
+  }
+
+  let parsed: { ingredients?: unknown };
+  try {
+    parsed = JSON.parse(content);
+  } catch {
+    throw new Error("AI response was not valid JSON");
+  }
+
+  if (!Array.isArray(parsed.ingredients)) {
+    throw new Error("AI response was missing the ingredients array");
+  }
+
+  const seen = new Set<string>();
+  const ingredients: GeneratedIngredient[] = [];
+  for (const item of parsed.ingredients as GeneratedIngredient[]) {
+    if (!item || typeof item.name !== "string") continue;
+    const key = item.name.trim().toLowerCase();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    ingredients.push({
+      name: item.name.trim(),
+      quantity: typeof item.quantity === "number" && Number.isFinite(item.quantity) ? item.quantity : null,
+      unit: typeof item.unit === "string" && item.unit.trim() ? item.unit.trim() : null,
+    });
+  }
+
+  if (ingredients.length === 0) {
+    throw new Error("AI response had no usable ingredients");
+  }
+
+  return ingredients;
 };
 
 export interface MealSuggestionOptions {

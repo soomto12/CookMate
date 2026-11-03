@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { prisma } from "../lib/prisma";
+import { prisma } from "./lib/prisma";
 
 
 
@@ -30,7 +30,7 @@ export const listAllergensHandler = async (req: Request, res: Response, next: Ne
 export const addAllergensHandler = async (req: Request, res: Response, next: NextFunction) => {
     const user = await prisma.user.findUnique({where: { id: req.userId}})
     if (!user){
-       return res.status(404).json({error: "user does not exist"})
+       return res.status(404).json({error: "user does not exists"})
 
     }
   const userId = user.id as string;
@@ -76,6 +76,7 @@ if(user.id !== allergen?.userId ) {
     if (err?.code === "P2025") {
       return next(Object.assign(new Error("Allergen list not found"), { status: 404 }));
     }
-    return next(err);
+    return next(err); 
   }
 };
+ 

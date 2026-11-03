@@ -1,4 +1,4 @@
-import { prisma } from "../lib/prisma";
+import { prisma } from "../controllers/lib/prisma";
 
 // The names of the foods the user is allergic to.
 export const userAllergen = async (id: string | undefined): Promise<string[]> => {
