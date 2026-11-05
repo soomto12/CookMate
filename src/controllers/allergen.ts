@@ -34,7 +34,7 @@ export const addAllergensHandler = async (req: Request, res: Response, next: Nex
 
     }
   const userId = user.id as string;
-  const names = [...new Set<string>(req.body.foods.map(normalize))];
+  const names = [...new Set<string>(req.body.allergens.map(normalize))];
   const foods = {
     connectOrCreate: names.map((name) => ({ where: { name }, create: { name } })),
   };
@@ -46,7 +46,7 @@ export const addAllergensHandler = async (req: Request, res: Response, next: Nex
       create: { userId, foods },
       include: allergenFoods,
     });
-    return res.status(201).json({ foods: allergen.foods });
+    return res.status(201).json({allergens : allergen.foods });
   } catch (err) {
     return next(err);
   }
@@ -58,14 +58,6 @@ export const removeAllergenHandler = async (req: Request, res: Response, next: N
        return res.status(404).json({message: "user does not exist"})
 
     }
-    const allergen = await prisma.allergen.findUnique({where: {userId: user.id}})
-
-
-if(user.id !== allergen?.userId ) {
-  return res.status(404).json({error: "not authorized to remove this data"})
-}
-
-
   try {
     await prisma.allergen.update({
       where: { userId: user.id as string },

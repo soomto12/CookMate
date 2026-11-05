@@ -21,17 +21,17 @@ const validateRequest = (req: any, res: any, next: any) => {
 };
 
 const addAllergensValidation = [
-  body("foods")
+  body("allergens")
     .isArray({ min: 1, max: 100 })
-    .withMessage("foods must be a non-empty array of food names"),
-  body("foods.*")
+    .withMessage("allergens must be a non-empty array of food names"),
+  body("allergens.*")
     .isString()
-    .withMessage("foods must contain only strings")
+    .withMessage("allergens must contain only strings")
     .trim()
     .notEmpty()
-    .withMessage("each food name must be non-empty")
+    .withMessage("each allergen name must be non-empty")
     .isLength({ max: 100 })
-    .withMessage("each food name must be at most 100 characters"),
+    .withMessage("each allergen name must be at most 100 characters"),
 ];
 
 router.get("/", requireAuth, listAllergensHandler);

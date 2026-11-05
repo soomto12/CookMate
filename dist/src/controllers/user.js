@@ -5,8 +5,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.login = exports.me = exports.signUp = void 0;
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
-const prisma_1 = require("../lib/prisma");
-const jwt_1 = require("../lib/jwt");
+const prisma_1 = require("./lib/prisma");
+const jwt_1 = require("./lib/jwt");
 const SALT_ROUNDS = 10;
 const signUp = async (req, res, next) => {
     const { name, email, password } = req.body;
@@ -22,7 +22,7 @@ const signUp = async (req, res, next) => {
         });
         const token = (0, jwt_1.signToken)({ userId: user.id });
         return res.status(201).json({
-            user: { id: user.id, name: user.name, email: user.email },
+            user: { id: user.id, name: user.name, email: user.email, },
             token,
         });
     }

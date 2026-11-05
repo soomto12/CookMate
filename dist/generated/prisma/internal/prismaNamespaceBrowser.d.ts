@@ -32,6 +32,8 @@ export declare const ModelName: {
     readonly RecipeStep: 'RecipeStep';
     readonly ShoppingList: 'ShoppingList';
     readonly ShoppingListItem: 'ShoppingListItem';
+    readonly Allergen: 'Allergen';
+    readonly Food: 'Food';
 };
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
 export declare const TransactionIsolationLevel: {
@@ -58,6 +60,9 @@ export declare const RecipeScalarFieldEnum: {
     readonly servings: 'servings';
     readonly cookTimeMinutes: 'cookTimeMinutes';
     readonly difficulty: 'difficulty';
+    readonly imageUrl: 'imageUrl';
+    readonly imageCredit: 'imageCredit';
+    readonly imageCreditUrl: 'imageCreditUrl';
     readonly createdAt: 'createdAt';
     readonly updatedAt: 'updatedAt';
     readonly createdById: 'createdById';
@@ -96,6 +101,20 @@ export declare const ShoppingListItemScalarFieldEnum: {
     readonly shoppingListId: 'shoppingListId';
 };
 export type ShoppingListItemScalarFieldEnum = (typeof ShoppingListItemScalarFieldEnum)[keyof typeof ShoppingListItemScalarFieldEnum];
+export declare const AllergenScalarFieldEnum: {
+    readonly id: 'id';
+    readonly createdAt: 'createdAt';
+    readonly updatedAt: 'updatedAt';
+    readonly userId: 'userId';
+};
+export type AllergenScalarFieldEnum = (typeof AllergenScalarFieldEnum)[keyof typeof AllergenScalarFieldEnum];
+export declare const FoodScalarFieldEnum: {
+    readonly id: 'id';
+    readonly name: 'name';
+    readonly createdAt: 'createdAt';
+    readonly updatedAt: 'updatedAt';
+};
+export type FoodScalarFieldEnum = (typeof FoodScalarFieldEnum)[keyof typeof FoodScalarFieldEnum];
 export declare const SortOrder: {
     readonly asc: 'asc';
     readonly desc: 'desc';

@@ -1,6 +1,6 @@
-# CookMate
+# Mealio
 
-CookMate is a REST API that turns whatever ingredients you have on hand into a full recipe. Tell it a meal you want to cook and what's in your kitchen, and an AI generates a complete recipe (ingredients, steps, cook time, difficulty) — plus a shopping list for anything you're missing.
+Mealio is a REST API that turns whatever ingredients you have on hand into a full recipe. Tell it a meal you want to cook and what's in your kitchen, and an AI generates a complete recipe (ingredients, steps, cook time, difficulty) — plus a shopping list for anything you're missing.
 
 ## Features
 

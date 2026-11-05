@@ -48,7 +48,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.NullsOrder = exports.QueryMode = exports.SortOrder = exports.ShoppingListItemScalarFieldEnum = exports.ShoppingListScalarFieldEnum = exports.RecipeStepScalarFieldEnum = exports.RecipeIngredientScalarFieldEnum = exports.RecipeScalarFieldEnum = exports.UserScalarFieldEnum = exports.TransactionIsolationLevel = exports.ModelName = exports.AnyNull = exports.JsonNull = exports.DbNull = exports.NullTypes = exports.Decimal = void 0;
+exports.NullsOrder = exports.QueryMode = exports.SortOrder = exports.FoodScalarFieldEnum = exports.AllergenScalarFieldEnum = exports.ShoppingListItemScalarFieldEnum = exports.ShoppingListScalarFieldEnum = exports.RecipeStepScalarFieldEnum = exports.RecipeIngredientScalarFieldEnum = exports.RecipeScalarFieldEnum = exports.UserScalarFieldEnum = exports.TransactionIsolationLevel = exports.ModelName = exports.AnyNull = exports.JsonNull = exports.DbNull = exports.NullTypes = exports.Decimal = void 0;
 const runtime = __importStar(require("@prisma/client/runtime/index-browser"));
 exports.Decimal = runtime.Decimal;
 exports.NullTypes = {
@@ -80,7 +80,9 @@ exports.ModelName = {
     RecipeIngredient: 'RecipeIngredient',
     RecipeStep: 'RecipeStep',
     ShoppingList: 'ShoppingList',
-    ShoppingListItem: 'ShoppingListItem'
+    ShoppingListItem: 'ShoppingListItem',
+    Allergen: 'Allergen',
+    Food: 'Food'
 };
 /*
  * Enums
@@ -107,6 +109,9 @@ exports.RecipeScalarFieldEnum = {
     servings: 'servings',
     cookTimeMinutes: 'cookTimeMinutes',
     difficulty: 'difficulty',
+    imageUrl: 'imageUrl',
+    imageCredit: 'imageCredit',
+    imageCreditUrl: 'imageCreditUrl',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     createdById: 'createdById'
@@ -139,6 +144,18 @@ exports.ShoppingListItemScalarFieldEnum = {
     purchased: 'purchased',
     createdAt: 'createdAt',
     shoppingListId: 'shoppingListId'
+};
+exports.AllergenScalarFieldEnum = {
+    id: 'id',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    userId: 'userId'
+};
+exports.FoodScalarFieldEnum = {
+    id: 'id',
+    name: 'name',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
 };
 exports.SortOrder = {
     asc: 'asc',

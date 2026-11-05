@@ -51,4 +51,14 @@ export type ShoppingList = Prisma.ShoppingListModel;
  *
  */
 export type ShoppingListItem = Prisma.ShoppingListItemModel;
+/**
+ * Model Allergen
+ *
+ */
+export type Allergen = Prisma.AllergenModel;
+/**
+ * Model Food
+ *
+ */
+export type Food = Prisma.FoodModel;
 //# sourceMappingURL=client.d.ts.map

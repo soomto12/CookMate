@@ -48,7 +48,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.defineExtension = exports.NullsOrder = exports.QueryMode = exports.SortOrder = exports.ShoppingListItemScalarFieldEnum = exports.ShoppingListScalarFieldEnum = exports.RecipeStepScalarFieldEnum = exports.RecipeIngredientScalarFieldEnum = exports.RecipeScalarFieldEnum = exports.UserScalarFieldEnum = exports.TransactionIsolationLevel = exports.ModelName = exports.AnyNull = exports.JsonNull = exports.DbNull = exports.NullTypes = exports.prismaVersion = exports.getExtensionContext = exports.Decimal = exports.Sql = exports.raw = exports.join = exports.empty = exports.sql = exports.PrismaClientValidationError = exports.PrismaClientInitializationError = exports.PrismaClientRustPanicError = exports.PrismaClientUnknownRequestError = exports.PrismaClientKnownRequestError = void 0;
+exports.defineExtension = exports.NullsOrder = exports.QueryMode = exports.SortOrder = exports.FoodScalarFieldEnum = exports.AllergenScalarFieldEnum = exports.ShoppingListItemScalarFieldEnum = exports.ShoppingListScalarFieldEnum = exports.RecipeStepScalarFieldEnum = exports.RecipeIngredientScalarFieldEnum = exports.RecipeScalarFieldEnum = exports.UserScalarFieldEnum = exports.TransactionIsolationLevel = exports.ModelName = exports.AnyNull = exports.JsonNull = exports.DbNull = exports.NullTypes = exports.prismaVersion = exports.getExtensionContext = exports.Decimal = exports.Sql = exports.raw = exports.join = exports.empty = exports.sql = exports.PrismaClientValidationError = exports.PrismaClientInitializationError = exports.PrismaClientRustPanicError = exports.PrismaClientUnknownRequestError = exports.PrismaClientKnownRequestError = void 0;
 const runtime = __importStar(require("@prisma/client/runtime/client"));
 /**
  * Prisma Errors
@@ -108,7 +108,9 @@ exports.ModelName = {
     RecipeIngredient: 'RecipeIngredient',
     RecipeStep: 'RecipeStep',
     ShoppingList: 'ShoppingList',
-    ShoppingListItem: 'ShoppingListItem'
+    ShoppingListItem: 'ShoppingListItem',
+    Allergen: 'Allergen',
+    Food: 'Food'
 };
 /**
  * Enums
@@ -135,6 +137,9 @@ exports.RecipeScalarFieldEnum = {
     servings: 'servings',
     cookTimeMinutes: 'cookTimeMinutes',
     difficulty: 'difficulty',
+    imageUrl: 'imageUrl',
+    imageCredit: 'imageCredit',
+    imageCreditUrl: 'imageCreditUrl',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     createdById: 'createdById'
@@ -167,6 +172,18 @@ exports.ShoppingListItemScalarFieldEnum = {
     purchased: 'purchased',
     createdAt: 'createdAt',
     shoppingListId: 'shoppingListId'
+};
+exports.AllergenScalarFieldEnum = {
+    id: 'id',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    userId: 'userId'
+};
+exports.FoodScalarFieldEnum = {
+    id: 'id',
+    name: 'name',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
 };
 exports.SortOrder = {
     asc: 'asc',

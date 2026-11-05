@@ -1,23 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateRecipe = void 0;
+exports.suggestMeals = exports.generateIngredients = exports.generateRecipe = void 0;
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
-const COMMON_ALLERGENS = [
-    "peanuts",
-    "tree nuts",
-    "milk",
-    "eggs",
-    "wheat/gluten",
-    "soy",
-    "fish",
-    "shellfish",
-    "sesame",
-];
-const buildPrompt = (mealName, availableIngredients, preferences) => {
+const userallergen_1 = require("./userallergen");
+const buildPrompt = (mealName, availableIngredients, allergens, preferences) => {
     const availableList = availableIngredients.length > 0 ? availableIngredients.join(", ") : "nothing in particular";
     const constraints = [];
-    if (preferences.excludeCommonAllergens) {
-        constraints.push(`Do not use any of these common allergens: ${COMMON_ALLERGENS.join(", ")}.`);
+    if (preferences.excludeCommonAllergens && allergens.length > 0) {
+        constraints.push(`Do not use any of these allergens, including ingredients that contain them (e.g. sauces, stocks, or spreads): ${allergens.join(", ")}.`);
     }
     if (preferences.quickMealOnly) {
         constraints.push("The recipe must be quick: total cook time of 30 minutes or less.");
@@ -26,6 +16,8 @@ const buildPrompt = (mealName, availableIngredients, preferences) => {
 They currently have these ingredients available: ${availableList}.
 ${constraints.length > 0 ? `\nKitchen preferences (must follow):\n${constraints.join("\n")}\n` : ""}
 Write a complete recipe for "${mealName}". List every ingredient the recipe actually needs (not just the ones the user already has), and give clear, ordered, step-by-step cooking instructions.
+
+Each ingredient must appear in the list exactly once. Never repeat the same ingredient, even with a different quantity, unit or wording (e.g. do not list both "tomato" and "tomatoes"). If an ingredient is used in several steps, combine the total into a single entry.
 
 Also estimate the total cook time in minutes, and rate the recipe's difficulty as "EASY", "MEDIUM", or "HARD".
 
@@ -41,7 +33,8 @@ Respond with ONLY a single JSON object, no other text, in exactly this shape:
   "steps": [ string, string, ... ]
 }`;
 };
-const generateRecipe = async (mealName, availableIngredients, preferences = {}) => {
+const generateRecipe = async (mealName, availableIngredients, id, preferences = {}) => {
+    const allergens = preferences.excludeCommonAllergens ? await (0, userallergen_1.userAllergen)(id) : [];
     const response = await fetch(OPENROUTER_API_URL, {
         method: "POST",
         headers: {
@@ -56,7 +49,7 @@ const generateRecipe = async (mealName, availableIngredients, preferences = {}) 
                     role: "system",
                     content: "You are a precise recipe-writing assistant. Always respond with a single valid JSON object and nothing else - no markdown, no commentary.",
                 },
-                { role: "user", content: buildPrompt(mealName, availableIngredients, preferences) },
+                { role: "user", content: buildPrompt(mealName, availableIngredients, allergens, preferences) },
             ],
         }),
     });
@@ -69,9 +62,36 @@ const generateRecipe = async (mealName, availableIngredients, preferences = {}) 
     if (typeof content !== "string") {
         throw new Error("OpenRouter response did not contain message content");
     }
-    const parsed = JSON.parse(content);
+    let parsed;
+    try {
+        parsed = JSON.parse(content);
+    }
+    catch {
+        throw new Error("AI response was not valid JSON");
+    }
     if (!parsed.title || !Array.isArray(parsed.ingredients) || !Array.isArray(parsed.steps)) {
         throw new Error("AI response was missing required recipe fields");
+    }
+    // Safety net: the prompt asks for no duplicates, but the database enforces
+    // unique ingredient names per recipe, so clean the list here as well.
+    const seen = new Set();
+    const ingredients = [];
+    for (const item of parsed.ingredients) {
+        if (!item || typeof item.name !== "string")
+            continue;
+        const key = item.name.trim().toLowerCase();
+        if (!key || seen.has(key))
+            continue;
+        seen.add(key);
+        ingredients.push({
+            name: item.name.trim(),
+            quantity: typeof item.quantity === "number" && Number.isFinite(item.quantity) ? item.quantity : null,
+            unit: typeof item.unit === "string" && item.unit.trim() ? item.unit.trim() : null,
+        });
+    }
+    const steps = parsed.steps.filter((step) => typeof step === "string" && step.trim().length > 0);
+    if (ingredients.length === 0 || steps.length === 0) {
+        throw new Error("AI response had no usable ingredients or steps");
     }
     const validDifficulties = ["EASY", "MEDIUM", "HARD"];
     const difficulty = validDifficulties.includes(parsed.difficulty)
@@ -80,7 +100,123 @@ const generateRecipe = async (mealName, availableIngredients, preferences = {}) 
     const cookTimeMinutes = typeof parsed.cookTimeMinutes === "number" && Number.isFinite(parsed.cookTimeMinutes)
         ? parsed.cookTimeMinutes
         : null;
-    return { ...parsed, difficulty, cookTimeMinutes };
+    return { ...parsed, ingredients, steps, difficulty, cookTimeMinutes };
 };
 exports.generateRecipe = generateRecipe;
+// Lists every ingredient needed for a meal (no steps, nothing saved).
+const generateIngredients = async (mealName) => {
+    const prompt = `List every ingredient needed to cook "${mealName}".
+
+Each ingredient must appear exactly once. Never repeat the same ingredient, even with a different quantity, unit or wording (e.g. do not list both "tomato" and "tomatoes").
+
+Respond with ONLY a single JSON object, no other text, in exactly this shape:
+{ "ingredients": [ { "name": string, "quantity": number or null, "unit": string or null } ] }`;
+    const response = await fetch(OPENROUTER_API_URL, {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            model: process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini",
+            response_format: { type: "json_object" },
+            messages: [
+                {
+                    role: "system",
+                    content: "You are a precise cooking assistant. Always respond with a single valid JSON object and nothing else - no markdown, no commentary.",
+                },
+                { role: "user", content: prompt },
+            ],
+        }),
+    });
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`OpenRouter request failed (${response.status}): ${errorText}`);
+    }
+    const data = (await response.json());
+    const content = data.choices?.[0]?.message?.content;
+    if (typeof content !== "string") {
+        throw new Error("OpenRouter response did not contain message content");
+    }
+    let parsed;
+    try {
+        parsed = JSON.parse(content);
+    }
+    catch {
+        throw new Error("AI response was not valid JSON");
+    }
+    if (!Array.isArray(parsed.ingredients)) {
+        throw new Error("AI response was missing the ingredients array");
+    }
+    const seen = new Set();
+    const ingredients = [];
+    for (const item of parsed.ingredients) {
+        if (!item || typeof item.name !== "string")
+            continue;
+        const key = item.name.trim().toLowerCase();
+        if (!key || seen.has(key))
+            continue;
+        seen.add(key);
+        ingredients.push({
+            name: item.name.trim(),
+            quantity: typeof item.quantity === "number" && Number.isFinite(item.quantity) ? item.quantity : null,
+            unit: typeof item.unit === "string" && item.unit.trim() ? item.unit.trim() : null,
+        });
+    }
+    if (ingredients.length === 0) {
+        throw new Error("AI response had no usable ingredients");
+    }
+    return ingredients;
+};
+exports.generateIngredients = generateIngredients;
+// Suggests meal names (no recipes) that can be made mostly from the given ingredients.
+const suggestMeals = async (availableIngredients, options = {}) => {
+    const { count = 5 } = options;
+    const prompt = `The user has these ingredients available: ${availableIngredients.join(", ")}.
+Suggest ${count} different meals they could cook, preferring meals that need few or no extra ingredients.
+Respond with ONLY a single JSON object, no other text, in exactly this shape:
+{ "meals": [ string, string, ... ] }
+Each item is just the name of the meal. Do not include recipes, ingredients or descriptions.`;
+    const response = await fetch(OPENROUTER_API_URL, {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            model: process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini",
+            response_format: { type: "json_object" },
+            messages: [
+                {
+                    role: "system",
+                    content: "You are a helpful cooking assistant. Always respond with a single valid JSON object and nothing else - no markdown, no commentary.",
+                },
+                { role: "user", content: prompt },
+            ],
+        }),
+    });
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`OpenRouter request failed (${response.status}): ${errorText}`);
+    }
+    const data = (await response.json());
+    const content = data.choices?.[0]?.message?.content;
+    if (typeof content !== "string") {
+        throw new Error("OpenRouter response did not contain message content");
+    }
+    let parsed;
+    try {
+        parsed = JSON.parse(content);
+    }
+    catch {
+        throw new Error("AI response was not valid JSON");
+    }
+    if (!Array.isArray(parsed.meals)) {
+        throw new Error("AI response was missing the meals array");
+    }
+    return parsed.meals
+        .filter((meal) => typeof meal === "string" && meal.trim().length > 0)
+        .map((meal) => meal.trim());
+};
+exports.suggestMeals = suggestMeals;
 //# sourceMappingURL=recipeGeneration.js.map

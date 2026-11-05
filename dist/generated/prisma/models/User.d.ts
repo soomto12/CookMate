@@ -148,6 +148,7 @@ export type UserWhereInput = {
     updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string;
     recipes?: Prisma.RecipeListRelationFilter;
     shoppingLists?: Prisma.ShoppingListListRelationFilter;
+    allergen?: Prisma.XOR<Prisma.AllergenNullableScalarRelationFilter, Prisma.AllergenWhereInput> | null;
 };
 export type UserOrderByWithRelationInput = {
     id?: Prisma.SortOrder;
@@ -158,6 +159,7 @@ export type UserOrderByWithRelationInput = {
     updatedAt?: Prisma.SortOrder;
     recipes?: Prisma.RecipeOrderByRelationAggregateInput;
     shoppingLists?: Prisma.ShoppingListOrderByRelationAggregateInput;
+    allergen?: Prisma.AllergenOrderByWithRelationInput;
 };
 export type UserWhereUniqueInput = Prisma.AtLeast<{
     id?: string;
@@ -171,6 +173,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
     updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string;
     recipes?: Prisma.RecipeListRelationFilter;
     shoppingLists?: Prisma.ShoppingListListRelationFilter;
+    allergen?: Prisma.XOR<Prisma.AllergenNullableScalarRelationFilter, Prisma.AllergenWhereInput> | null;
 }, "id" | "email">;
 export type UserOrderByWithAggregationInput = {
     id?: Prisma.SortOrder;
@@ -203,6 +206,7 @@ export type UserCreateInput = {
     updatedAt?: Date | string;
     recipes?: Prisma.RecipeCreateNestedManyWithoutCreatedByInput;
     shoppingLists?: Prisma.ShoppingListCreateNestedManyWithoutUserInput;
+    allergen?: Prisma.AllergenCreateNestedOneWithoutUserInput;
 };
 export type UserUncheckedCreateInput = {
     id?: string;
@@ -213,6 +217,7 @@ export type UserUncheckedCreateInput = {
     updatedAt?: Date | string;
     recipes?: Prisma.RecipeUncheckedCreateNestedManyWithoutCreatedByInput;
     shoppingLists?: Prisma.ShoppingListUncheckedCreateNestedManyWithoutUserInput;
+    allergen?: Prisma.AllergenUncheckedCreateNestedOneWithoutUserInput;
 };
 export type UserUpdateInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -223,6 +228,7 @@ export type UserUpdateInput = {
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     recipes?: Prisma.RecipeUpdateManyWithoutCreatedByNestedInput;
     shoppingLists?: Prisma.ShoppingListUpdateManyWithoutUserNestedInput;
+    allergen?: Prisma.AllergenUpdateOneWithoutUserNestedInput;
 };
 export type UserUncheckedUpdateInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -233,6 +239,7 @@ export type UserUncheckedUpdateInput = {
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     recipes?: Prisma.RecipeUncheckedUpdateManyWithoutCreatedByNestedInput;
     shoppingLists?: Prisma.ShoppingListUncheckedUpdateManyWithoutUserNestedInput;
+    allergen?: Prisma.AllergenUncheckedUpdateOneWithoutUserNestedInput;
 };
 export type UserCreateManyInput = {
     id?: string;
@@ -322,6 +329,18 @@ export type UserUpdateOneRequiredWithoutShoppingListsNestedInput = {
     connect?: Prisma.UserWhereUniqueInput;
     update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutShoppingListsInput, Prisma.UserUpdateWithoutShoppingListsInput>, Prisma.UserUncheckedUpdateWithoutShoppingListsInput>;
 };
+export type UserCreateNestedOneWithoutAllergenInput = {
+    create?: Prisma.XOR<Prisma.UserCreateWithoutAllergenInput, Prisma.UserUncheckedCreateWithoutAllergenInput>;
+    connectOrCreate?: Prisma.UserCreateOrConnectWithoutAllergenInput;
+    connect?: Prisma.UserWhereUniqueInput;
+};
+export type UserUpdateOneRequiredWithoutAllergenNestedInput = {
+    create?: Prisma.XOR<Prisma.UserCreateWithoutAllergenInput, Prisma.UserUncheckedCreateWithoutAllergenInput>;
+    connectOrCreate?: Prisma.UserCreateOrConnectWithoutAllergenInput;
+    upsert?: Prisma.UserUpsertWithoutAllergenInput;
+    connect?: Prisma.UserWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAllergenInput, Prisma.UserUpdateWithoutAllergenInput>, Prisma.UserUncheckedUpdateWithoutAllergenInput>;
+};
 export type UserCreateWithoutRecipesInput = {
     id?: string;
     name: string;
@@ -330,6 +349,7 @@ export type UserCreateWithoutRecipesInput = {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     shoppingLists?: Prisma.ShoppingListCreateNestedManyWithoutUserInput;
+    allergen?: Prisma.AllergenCreateNestedOneWithoutUserInput;
 };
 export type UserUncheckedCreateWithoutRecipesInput = {
     id?: string;
@@ -339,6 +359,7 @@ export type UserUncheckedCreateWithoutRecipesInput = {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     shoppingLists?: Prisma.ShoppingListUncheckedCreateNestedManyWithoutUserInput;
+    allergen?: Prisma.AllergenUncheckedCreateNestedOneWithoutUserInput;
 };
 export type UserCreateOrConnectWithoutRecipesInput = {
     where: Prisma.UserWhereUniqueInput;
@@ -361,6 +382,7 @@ export type UserUpdateWithoutRecipesInput = {
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     shoppingLists?: Prisma.ShoppingListUpdateManyWithoutUserNestedInput;
+    allergen?: Prisma.AllergenUpdateOneWithoutUserNestedInput;
 };
 export type UserUncheckedUpdateWithoutRecipesInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -370,6 +392,7 @@ export type UserUncheckedUpdateWithoutRecipesInput = {
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     shoppingLists?: Prisma.ShoppingListUncheckedUpdateManyWithoutUserNestedInput;
+    allergen?: Prisma.AllergenUncheckedUpdateOneWithoutUserNestedInput;
 };
 export type UserCreateWithoutShoppingListsInput = {
     id?: string;
@@ -379,6 +402,7 @@ export type UserCreateWithoutShoppingListsInput = {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     recipes?: Prisma.RecipeCreateNestedManyWithoutCreatedByInput;
+    allergen?: Prisma.AllergenCreateNestedOneWithoutUserInput;
 };
 export type UserUncheckedCreateWithoutShoppingListsInput = {
     id?: string;
@@ -388,6 +412,7 @@ export type UserUncheckedCreateWithoutShoppingListsInput = {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     recipes?: Prisma.RecipeUncheckedCreateNestedManyWithoutCreatedByInput;
+    allergen?: Prisma.AllergenUncheckedCreateNestedOneWithoutUserInput;
 };
 export type UserCreateOrConnectWithoutShoppingListsInput = {
     where: Prisma.UserWhereUniqueInput;
@@ -410,6 +435,7 @@ export type UserUpdateWithoutShoppingListsInput = {
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     recipes?: Prisma.RecipeUpdateManyWithoutCreatedByNestedInput;
+    allergen?: Prisma.AllergenUpdateOneWithoutUserNestedInput;
 };
 export type UserUncheckedUpdateWithoutShoppingListsInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -419,6 +445,60 @@ export type UserUncheckedUpdateWithoutShoppingListsInput = {
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     recipes?: Prisma.RecipeUncheckedUpdateManyWithoutCreatedByNestedInput;
+    allergen?: Prisma.AllergenUncheckedUpdateOneWithoutUserNestedInput;
+};
+export type UserCreateWithoutAllergenInput = {
+    id?: string;
+    name: string;
+    email: string;
+    password: string;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    recipes?: Prisma.RecipeCreateNestedManyWithoutCreatedByInput;
+    shoppingLists?: Prisma.ShoppingListCreateNestedManyWithoutUserInput;
+};
+export type UserUncheckedCreateWithoutAllergenInput = {
+    id?: string;
+    name: string;
+    email: string;
+    password: string;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    recipes?: Prisma.RecipeUncheckedCreateNestedManyWithoutCreatedByInput;
+    shoppingLists?: Prisma.ShoppingListUncheckedCreateNestedManyWithoutUserInput;
+};
+export type UserCreateOrConnectWithoutAllergenInput = {
+    where: Prisma.UserWhereUniqueInput;
+    create: Prisma.XOR<Prisma.UserCreateWithoutAllergenInput, Prisma.UserUncheckedCreateWithoutAllergenInput>;
+};
+export type UserUpsertWithoutAllergenInput = {
+    update: Prisma.XOR<Prisma.UserUpdateWithoutAllergenInput, Prisma.UserUncheckedUpdateWithoutAllergenInput>;
+    create: Prisma.XOR<Prisma.UserCreateWithoutAllergenInput, Prisma.UserUncheckedCreateWithoutAllergenInput>;
+    where?: Prisma.UserWhereInput;
+};
+export type UserUpdateToOneWithWhereWithoutAllergenInput = {
+    where?: Prisma.UserWhereInput;
+    data: Prisma.XOR<Prisma.UserUpdateWithoutAllergenInput, Prisma.UserUncheckedUpdateWithoutAllergenInput>;
+};
+export type UserUpdateWithoutAllergenInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    name?: Prisma.StringFieldUpdateOperationsInput | string;
+    email?: Prisma.StringFieldUpdateOperationsInput | string;
+    password?: Prisma.StringFieldUpdateOperationsInput | string;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    recipes?: Prisma.RecipeUpdateManyWithoutCreatedByNestedInput;
+    shoppingLists?: Prisma.ShoppingListUpdateManyWithoutUserNestedInput;
+};
+export type UserUncheckedUpdateWithoutAllergenInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    name?: Prisma.StringFieldUpdateOperationsInput | string;
+    email?: Prisma.StringFieldUpdateOperationsInput | string;
+    password?: Prisma.StringFieldUpdateOperationsInput | string;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    recipes?: Prisma.RecipeUncheckedUpdateManyWithoutCreatedByNestedInput;
+    shoppingLists?: Prisma.ShoppingListUncheckedUpdateManyWithoutUserNestedInput;
 };
 /**
  * Count Type UserCountOutputType
@@ -461,6 +541,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
     updatedAt?: boolean;
     recipes?: boolean | Prisma.User$recipesArgs<ExtArgs>;
     shoppingLists?: boolean | Prisma.User$shoppingListsArgs<ExtArgs>;
+    allergen?: boolean | Prisma.User$allergenArgs<ExtArgs>;
     _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>;
 }, ExtArgs["result"]["user"]>;
 export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -491,6 +572,7 @@ export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = run
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     recipes?: boolean | Prisma.User$recipesArgs<ExtArgs>;
     shoppingLists?: boolean | Prisma.User$shoppingListsArgs<ExtArgs>;
+    allergen?: boolean | Prisma.User$allergenArgs<ExtArgs>;
     _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {};
@@ -500,6 +582,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     objects: {
         recipes: Prisma.$RecipePayload<ExtArgs>[];
         shoppingLists: Prisma.$ShoppingListPayload<ExtArgs>[];
+        allergen: Prisma.$AllergenPayload<ExtArgs> | null;
     };
     scalars: runtime.Types.Extensions.GetPayloadResult<{
         id: string;
@@ -839,6 +922,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
     readonly [Symbol.toStringTag]: "PrismaPromise";
     recipes<T extends Prisma.User$recipesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$recipesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RecipePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
     shoppingLists<T extends Prisma.User$shoppingListsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$shoppingListsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ShoppingListPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    allergen<T extends Prisma.User$allergenArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$allergenArgs<ExtArgs>>): Prisma.Prisma__AllergenClient<runtime.Types.Result.GetResult<Prisma.$AllergenPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>;
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1290,6 +1374,24 @@ export type User$shoppingListsArgs<ExtArgs extends runtime.Types.Extensions.Inte
     take?: number;
     skip?: number;
     distinct?: Prisma.ShoppingListScalarFieldEnum | Prisma.ShoppingListScalarFieldEnum[];
+};
+/**
+ * User.allergen
+ */
+export type User$allergenArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Allergen
+     */
+    select?: Prisma.AllergenSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Allergen
+     */
+    omit?: Prisma.AllergenOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.AllergenInclude<ExtArgs> | null;
+    where?: Prisma.AllergenWhereInput;
 };
 /**
  * User without action

@@ -1,0 +1,1 @@
+{"version":3,"file":"allergen.d.ts","sourceRoot":"","sources":["../../../src/controllers/allergen.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,YAAY,EAAE,OAAO,EAAE,QAAQ,EAAE,MAAM,SAAS,CAAC;AAU1D,eAAO,MAAM,oBAAoB,QAAe,OAAO,OAAO,QAAQ,QAAQ,YAAY,uDAezF,CAAC;AAIF,eAAO,MAAM,mBAAmB,QAAe,OAAO,OAAO,QAAQ,QAAQ,YAAY,uDAuBxF,CAAC;AAEF,eAAO,MAAM,qBAAqB,QAAe,OAAO,OAAO,QAAQ,QAAQ,YAAY,uDAkB1F,CAAC"}

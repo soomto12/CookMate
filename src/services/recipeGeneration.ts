@@ -236,8 +236,6 @@ Respond with ONLY a single JSON object, no other text, in exactly this shape:
 };
 
 export interface MealSuggestionOptions {
-  allergens?: string[];
-  quickMealOnly?: boolean;
   count?: number;
 }
 
@@ -246,21 +244,10 @@ export const suggestMeals = async (
   availableIngredients: string[],
   options: MealSuggestionOptions = {},
 ): Promise<string[]> => {
-  const { allergens = [], quickMealOnly = false, count = 5 } = options;
-
-  const constraints: string[] = [];
-  if (allergens.length > 0) {
-    constraints.push(
-      `Never suggest a meal that contains these allergens, including hidden sources such as sauces, stocks or spreads: ${allergens.join(", ")}.`,
-    );
-  }
-  if (quickMealOnly) {
-    constraints.push("Every meal must take 30 minutes or less to cook.");
-  }
+  const { count = 5 } = options;
 
   const prompt = `The user has these ingredients available: ${availableIngredients.join(", ")}.
 Suggest ${count} different meals they could cook, preferring meals that need few or no extra ingredients.
-${constraints.length > 0 ? `\nMust follow:\n${constraints.join("\n")}\n` : ""}
 Respond with ONLY a single JSON object, no other text, in exactly this shape:
 { "meals": [ string, string, ... ] }
 Each item is just the name of the meal. Do not include recipes, ingredients or descriptions.`;
@@ -300,7 +287,12 @@ Each item is just the name of the meal. Do not include recipes, ingredients or d
     throw new Error("OpenRouter response did not contain message content");
   }
 
-  const parsed = JSON.parse(content) as { meals?: unknown };
+  let parsed: { meals?: unknown };
+  try {
+    parsed = JSON.parse(content) as { meals?: unknown };
+  } catch {
+    throw new Error("AI response was not valid JSON");
+  }
 
   if (!Array.isArray(parsed.meals)) {
     throw new Error("AI response was missing the meals array");

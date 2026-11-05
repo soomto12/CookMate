@@ -27,8 +27,13 @@ app.use("/api/allergens", allergenRoutes);
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   console.error(err);
 
-  const status = typeof err?.status === "number" ? err.status : 500;
-  const message = typeof err?.message === "string" && err.message.trim().length > 0
+  const hasExplicitStatus = typeof err?.status === "number";
+  const status = hasExplicitStatus ? err.status : 500;
+
+  // Only errors we deliberately flagged with a status carry a safe,
+  // intentional message. Anything else (DB/Prisma errors, JSON parse
+  // failures, upstream API errors, etc.) must not leak internal details.
+  const message = hasExplicitStatus && typeof err?.message === "string" && err.message.trim().length > 0
     ? err.message
     : "Internal server error";
 
@@ -36,5 +41,5 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`CookMate API listening on port ${PORT}`);
+  console.log(`Mealio API listening on port ${PORT}`);
 });

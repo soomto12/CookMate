@@ -1,7 +1,7 @@
 const UNSPLASH_SEARCH_URL = "https://api.unsplash.com/search/photos";
 
 // Unsplash asks API apps to link back with these UTM params.
-const UTM = "utm_source=cookmate&utm_medium=referral";
+const UTM = "utm_source=mealio&utm_medium=referral";
 
 export interface RecipeImage {
   imageUrl: string;

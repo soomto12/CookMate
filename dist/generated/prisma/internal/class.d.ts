@@ -183,6 +183,28 @@ export interface PrismaClient<in LogOpts extends Prisma.LogLevel = never, in out
     get shoppingListItem(): Prisma.ShoppingListItemDelegate<ExtArgs, {
         omit: OmitOpts;
     }>;
+    /**
+     * `prisma.allergen`: Exposes CRUD operations for the **Allergen** model.
+      * Example usage:
+      * ```ts
+      * // Fetch zero or more Allergens
+      * const allergens = await prisma.allergen.findMany()
+      * ```
+      */
+    get allergen(): Prisma.AllergenDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
+    /**
+     * `prisma.food`: Exposes CRUD operations for the **Food** model.
+      * Example usage:
+      * ```ts
+      * // Fetch zero or more Foods
+      * const foods = await prisma.food.findMany()
+      * ```
+      */
+    get food(): Prisma.FoodDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
 }
 export declare function getPrismaClientClass(): PrismaClientConstructor;
 //# sourceMappingURL=class.d.ts.map

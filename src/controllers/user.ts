@@ -25,7 +25,7 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
     const token = signToken({ userId: user.id });
 
     return res.status(201).json({
-      user: { id: user.id, name: user.name, email: user.email },
+      user: { id: user.id, name: user.name, email: user.email, },
       token,
     });
   } catch (err) {

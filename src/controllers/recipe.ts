@@ -30,15 +30,7 @@ export const listRecipesHandler = async (req: Request, res: Response, next: Next
 };
 
 export const generateRecipeHandler = async (req: Request, res: Response, next: NextFunction) => {
-  const {
-    mealName,
-    availableIngredients,
-    excludeCommonAllergens,
-    quickMealOnly,
-    imageUrl,
-    imageCredit,
-    imageCreditUrl,
-  } = req.body;
+  const { mealName, availableIngredients = [], excludeCommonAllergens, quickMealOnly } = req.body;
 
   try {
     const user = await prisma.user.findUnique({ where: { id: req.userId }, select: { id: true } });
@@ -57,12 +49,8 @@ export const generateRecipeHandler = async (req: Request, res: Response, next: N
       (ingredient) => !availableSet.has(normalize(ingredient.name)),
     );
 
-    // Prefer the image the client is already showing the user, so the saved recipe
-    // matches it; only fall back to a lookup when none was sent. Resolved before the
-    // transaction so the Unsplash call can't hold it open.
-    const image = imageUrl
-      ? { imageUrl, imageCredit: imageCredit ?? null, imageCreditUrl: imageCreditUrl ?? null }
-      : await findRecipeImage(generated.title);
+    // Resolved before the transaction so the Unsplash call can't hold it open.
+    const image = await findRecipeImage(generated.title);
 
     const recipe = await prisma.$transaction(async (tx) => {
       const created = await tx.recipe.create({
@@ -145,7 +133,7 @@ export const generateIngredientsHandler = async (req: Request, res: Response, ne
 
 // Suggests meal names (just an array of strings, no recipes) from the user's ingredients.
 export const suggestMealsHandler = async (req: Request, res: Response, next: NextFunction) => {
-  const { availableIngredients, quickMealOnly } = req.body;
+  const { availableIngredients = [] } = req.body;
 
   try {
     const user = await prisma.user.findUnique({ where: { id: req.userId }, select: { id: true } });
@@ -153,15 +141,19 @@ export const suggestMealsHandler = async (req: Request, res: Response, next: Nex
       return res.status(404).json({ error: "user does not exist" });
     }
 
-    const allergen = await prisma.allergen.findUnique({
-      where: { userId: user.id },
-      include: { foods: true },
-    });
+    const mealNames = await suggestMeals(availableIngredients);
 
-    const meals = await suggestMeals(availableIngredients, {
-      allergens: allergen?.foods.map((food) => food.name) ?? [],
-      quickMealOnly,
-    });
+    const meals = await Promise.all(
+      mealNames.map(async (name) => {
+        const image = await findRecipeImage(name);
+        return {
+          name,
+          imageUrl: image?.imageUrl ?? null,
+          imageCredit: image?.imageCredit ?? null,
+          imageCreditUrl: image?.imageCreditUrl ?? null,
+        };
+      }),
+    );
 
     return res.status(200).json({ meals });
   } catch (err) {
